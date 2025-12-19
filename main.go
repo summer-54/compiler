@@ -34,7 +34,14 @@ func compile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	io.Copy(file, r.Body)
-	err = exec.Command("/usr/bin/g++", filepath.Join(wd, name+".cpp"), "-o", name).Run()
+	cmd := exec.Command("/usr/local/bin/g++", "-O3", "-std=c++23", filepath.Join(wd, name+".cpp"), "-o", name)
+	outfile, err := os.Create("./err-" + name)
+    if err != nil {
+        panic(err)
+    }
+    defer outfile.Close()
+	cmd.Stdout = outfile
+	err = cmd.Run()
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
